@@ -3,7 +3,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Containers.Application;
 
-public class ContainerService
+public class ContainerService : IContainerService
 {
     
     private string _connectionString;
@@ -50,5 +50,27 @@ public class ContainerService
         }
 
         return containers;
+    }
+
+    public bool CreateContainer(Container container)
+    {
+        const string insertString =
+            "insert into containers (ContainerTypeId, IsHazardious, Name ) values (@ContainerTypeId, @IsHazardious, @Name)";
+
+        int countRows = -1;
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        {
+            SqlCommand command = new SqlCommand(insertString, connection);
+            command.Parameters.AddWithValue("@ContainerTypeId", container.ContainerTypeId);
+            command.Parameters.AddWithValue("@IsHazardious", container.IsHazardious);
+            command.Parameters.AddWithValue("@Name", container.Name);
+            
+            connection.Open();
+            
+            countRows = command.ExecuteNonQuery();
+        }
+        
+        return countRows != -1;
     }
 }
